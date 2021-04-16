@@ -1,11 +1,11 @@
 class Vacature {
   constructor(id, titel, functieomschrijving, profiel, bedrijf, plaats) {
-    this.id = id;
-    this.titel = titel;
-    this.functieomschrijving = functieomschrijving;
-    this.profiel = profiel;
-    this.bedrijf = bedrijf;
-    this.plaats = plaats;
+    this._id = id;
+    this._titel = titel;
+    this._functieomschrijving = functieomschrijving;
+    this._profiel = profiel;
+    this._bedrijf = bedrijf;
+    this._plaats = plaats;
   }
 
   get id() {
@@ -27,25 +27,6 @@ class Vacature {
     return this._plaats;
   }
 
-  set id(value) {
-    this._id = value;
-  }
-  set titel(value) {
-    this._titel = value;
-  }
-  set functieomschrijving(value) {
-    this._functieomschrijving = value;
-  }
-  set profiel(value) {
-    this._profiel = value;
-  }
-  set bedrijf(value) {
-    this._bedrijf = value;
-  }
-  set plaats(value) {
-    this._plaats = value;
-  }
-
   bevatZoekterm(zoektermen) {
     return zoektermen.reduce((result, value) => result || this._titel.toLowerCase().includes(value.toLowerCase()), false)
   }
@@ -53,20 +34,16 @@ class Vacature {
 
 class VacaturesRepository {
   constructor() {
-    this.vacatures = [];
+    this._vacatures = [];
     this.vacaturesVullen();
   }
 
   get vacatures() {
     return this._vacatures;
   }
-  set vacatures(value) {
-    this._vacatures = value;
-  }
 
   voegVacatureToe(id, titel, functieomschrijving, profiel, bedrijf, plaats) {
-    const vacature = new Vacature(id, titel, functieomschrijving, profiel, bedrijf, plaats);
-    this._vacatures.push(vacature);
+    this._vacatures.push(new Vacature(id, titel, functieomschrijving, profiel, bedrijf, plaats));
   }
 
   vacaturesVullen() {
@@ -134,16 +111,16 @@ class VacaturesRepository {
     );
   }
 
-  filter(zoektermen) {
+  filterOpZoekTermen(zoektermen) {
     return this._vacatures.filter((value) => value.bevatZoekterm(zoektermen));
   }
 }
 
-class VdabComponent {
+class VdabApp {
   constructor(window) {
-    this.vacaturesRepository = new VacaturesRepository();
-    this.zoektermen = [];
-    this.storage = window.localStorage;
+    this._vacaturesRepository = new VacaturesRepository();
+    this._zoektermen = [];
+    this._storage = window.localStorage;
   }
 
   get vacaturesRepository() {
@@ -156,42 +133,61 @@ class VdabComponent {
     return this._storage;
   }
 
-  set vacaturesRepository(value) {
-    this._vacaturesRepository = value;
+  voegZoektermToe = ()=> {    
+    const zoekterm = document.getElementById("zoekterm").value;    
+    if (zoekterm === '' || this.zoektermen.find(value => value.toLowerCase() === zoekterm.toLowerCase())) 
+      document.getElementById('message').innerText = 'De zoekterm bestaat reeds of heeft geen waarde!';
+    else {
+      this.zoektermen.push(zoekterm);
+      this.setZoektermenInStorage();    
+      this.showResultaat();
+      document.getElementById("zoekterm").value = '';
+    }
   }
-  set zoektermen(value) {
-    this._zoektermen = value;
+
+  verwijderZoekterm(zoekterm){
+    const indexZoekterm = this._zoektermen.findIndex(value => zoekterm === value);
+    this._zoektermen.splice(indexZoekterm, 1);
+    this.setZoektermenInStorage(); 
+    this.showResultaat();
   }
-  set storage(value) {
-    this._storage = value;
+
+  getZoektermenFromStorage() {
+    this._zoektermen = [];
+    if (this._storage.getItem('VDABZoektermen')) {
+      this._zoektermen = JSON.parse(this._storage.getItem('VDABZoektermen'))
+    }
+  }
+
+  setZoektermenInStorage() {    
+      this._storage.setItem('VDABZoektermen', JSON.stringify(this._zoektermen));    
+  }
+
+  showResultaat(){
+    this.zoektermenToHtml();
+    this.vacaturesToHtml();
   }
 
   zoektermenToHtml() {
+    document.getElementById('message').innerText = '';
     document.getElementById('zoektermen').innerHTML = '';
     this._zoektermen.forEach((zoekterm) => {
-      const spanElement = document.createElement("span");
-      const spanText = document.createTextNode(zoekterm);
-      spanElement.appendChild(spanText);
-      const imgElement = document.createElement("img");
-      imgElement.setAttribute("src", "images/destroy.png");
-      imgElement.setAttribute("id", zoekterm);
-      spanElement.appendChild(imgElement);
-      document.getElementById('zoektermen').appendChild(spanElement);
-      imgElement.onclick = () => {
-        // index vinden van de zoekterm
-        const indexZoekterm = this._zoektermen.findIndex(value => zoekterm === value);
-        // zoekterm verwijderen
-        this._zoektermen.splice(indexZoekterm, 1);
-        this.setZoektermenInStorage();
-        this.zoektermenToHtml();
+      const sp = document.createElement("span");
+      sp.appendChild(document.createTextNode(zoekterm));
+      const img = document.createElement("img");
+      img.setAttribute("src", "images/destroy.png");
+      img.setAttribute("id", zoekterm);
+      sp.appendChild(img);
+      document.getElementById('zoektermen').appendChild(sp);
+      img.onclick = () => {
+        this.verwijderZoekterm(zoekterm);
       }
     })
-    this.vacaturesToHtml();
   }
 
   vacaturesToHtml() {
     document.getElementById('resultaat').innerHTML = '';
-    this._vacaturesRepository.filter(this._zoektermen).forEach(vacature => {
+    this._vacaturesRepository.filterOpZoekTermen(this._zoektermen).forEach(vacature => {
       const divElement = document.createElement('div');
       const h2Element = document.createElement('h2');
       const h2Text = document.createTextNode(vacature.titel);
@@ -227,21 +223,6 @@ class VdabComponent {
       document.getElementById('resultaat').appendChild(divElement);
     });
   }
-
-  getZoektermenFromStorage() {
-    this._zoektermen = [];
-    if (this._storage.getItem('VDABZoektermen')) {
-      this._zoektermen = JSON.parse(this._storage.getItem('VDABZoektermen'))
-    }
-  }
-
-  setZoektermenInStorage() {
-    try {
-      this._storage.setItem('VDABZoektermen', JSON.stringify(this._zoektermen));
-    } catch (e) {
-      if (e === QUOTA_EXCEEDED_ERR) alert('Out of storage!');
-    }
-  }
 }
 
 function init() {
@@ -271,35 +252,17 @@ function init() {
   */
   // Testcode Deel 2
 
-  const vacatureRepository = new VacaturesRepository();
-  console.log(vacatureRepository.vacatures);
-  console.log(vacatureRepository.filter(["javascript", "werfleider"]));
-  console.log(vacatureRepository.filter(["groen", "bomen", "planten"]));
+  // const vacatureRepository = new VacaturesRepository();
+  // console.log(vacatureRepository.vacatures);
+  // console.log(vacatureRepository.filter(["javascript", "werfleider"]));
+  // console.log(vacatureRepository.filter(["groen", "bomen", "planten"]));
 
   // Testcode Deel 3
 
-  const vdabComponent = new VdabComponent(this);
-  if (!vdabComponent.storage) {
-    alert('no storage available. ');
-    return;
-  } else {
-    vdabComponent.getZoektermenFromStorage();
-    vdabComponent.zoektermenToHtml();
-  }
-
-  document.getElementById("zoektermToevoegen").onclick = () => {
-    if (vdabComponent.zoektermen.find(value => value.toLowerCase() === document.getElementById("zoekterm").value.toLowerCase())) {
-      alert("Deze zoekterm bestaat al");
-    } else {
-      vdabComponent.zoektermen.push(document.getElementById("zoekterm").value.toLowerCase());
-      vdabComponent.setZoektermenInStorage();
-    }
-    document.getElementById("zoekterm").value = "";
-    vdabComponent.zoektermenToHtml();
-
-  }
+  const vdabApp = new VdabApp(this);
+  vdabApp.getZoektermenFromStorage();
+  vdabApp.showResultaat();
+  document.getElementById("zoektermToevoegen").onclick = vdabApp.voegZoektermToe;
 }
 
-window.onload = () => {
-  init();
-};
+window.onload = init;
