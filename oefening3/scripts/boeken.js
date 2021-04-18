@@ -1,8 +1,8 @@
 class Boek {
   constructor(id, titel, afbeelding) {
-    this.id = id;
-    this.titel = titel;
-    this.afbeelding = afbeelding;
+    this._id = id;
+    this._titel = titel;
+    this._afbeelding = afbeelding;
   }
 
   get id() {
@@ -14,29 +14,16 @@ class Boek {
   get afbeelding() {
     return this._afbeelding;
   }
-
-  set id(value) {
-    this._id = value;
-  }
-  set titel(value) {
-    this._titel = value;
-  }
-  set afbeelding(value) {
-    this._afbeelding = value;
-  }
 }
 
 class BoekenRepository {
   constructor() {
-    this.boeken = [];
+    this._boeken = [];
     this.boekenVullen();
   }
 
   get boeken() {
     return this._boeken;
-  }
-  set boeken(value) {
-    this._boeken = value;
   }
 
   voegBoekToe(id, titel, afbeelding) {
@@ -120,10 +107,10 @@ class BoekenRepository {
 
 class BoekenComponent {
   constructor(window) {
-    this.boekenRepository = new BoekenRepository();
-    this.gelezenBoeken = []; // bevat de id's van gelezen boeken
-    this.actievePagina = 1; // bevat het nummer van de pagina die momenteel getoond wordt
-    this.storage = window.localStorage;
+    this._boekenRepository = new BoekenRepository();
+    this._gelezenBoeken = []; // bevat de id's van gelezen boeken
+    this._actievePagina = 1; // bevat het nummer van de pagina die momenteel getoond wordt
+    this._storage = window.localStorage;
     this.aantalBoekenPerPagina = 6;
   }
   get boekenRepository() {
@@ -142,18 +129,6 @@ class BoekenComponent {
     return this._aantalBoekenPerPagina;
   }
 
-  set boekenRepository(value) {
-    this._boekenRepository = value;
-  }
-  set gelezenBoeken(value) {
-    this._gelezenBoeken = value;
-  }
-  set actievePagina(value) {
-    this._actievePagina = value;
-  }
-  set storage(value) {
-    this._storage = value;
-  }
   set aantalBoekenPerPagina(value) {
     this._aantalBoekenPerPagina = value;
   }
@@ -203,26 +178,26 @@ class BoekenComponent {
     // voor elk boek:
 
     boeken.forEach((boek) => {
-      const div1 = document.createElement("div");
-      div1.className = "col-md-2 col-sm-4";
-      const div2 = document.createElement("div");
-      const img = document.createElement("img");
-      img.setAttribute("src", "images/" + boek.afbeelding);
-      img.setAttribute("alt", "" + boek.titel);
-      img.setAttribute("id", "" + boek.id);
+      const div1 = document.createElement('div');
+      div1.className = 'col-md-2 col-sm-4';
+      const div2 = document.createElement('div');
+      const img = document.createElement('img');
+      img.setAttribute('src', 'images/' + boek.afbeelding);
+      img.setAttribute('alt', '' + boek.titel);
+      img.setAttribute('id', '' + boek.id);
       if (this._gelezenBoeken.indexOf(boek.id) === -1) {
-        div2.className = "thumbnail notread";
+        div2.className = 'thumbnail notread';
         img.onclick = () => {
           this.voegGelezenBoekToe(boek.id);
           this.boekenToHtml();
         };
       } else {
-        div2.className = "thumbnail read";
+        div2.className = 'thumbnail read';
       }
       div2.appendChild(img);
       div1.appendChild(div2);
       row.appendChild(div1);
-    })
+    });
     boekenDiv.appendChild(row);
   }
 
@@ -234,17 +209,20 @@ class BoekenComponent {
   // getGelezenBoekenFromStorage haaltde lijst met id's van gelezen boeken op uit de storage
   getGelezenBoekenFromStorage() {
     this._gelezenBoeken = [];
-    if (this._storage.getItem("gelezenBoeken")) {
-      this._gelezenBoeken = JSON.parse(this._storage.getItem("gelezenBoeken"));
+    if (this._storage.getItem('gelezenBoeken')) {
+      this._gelezenBoeken = JSON.parse(this._storage.getItem('gelezenBoeken'));
     }
   }
 
   // setGelezenBoekenInStorage plaatst de lijst van id's van gelezen boeken in de storage
   setGelezenBoekenInStorage() {
     try {
-      this._storage.setItem("gelezenBoeken", JSON.stringify(this._gelezenBoeken));
+      this._storage.setItem(
+        'gelezenBoeken',
+        JSON.stringify(this._gelezenBoeken)
+      );
     } catch (e) {
-      if (e == QUOTA_EXCEEDED_ERR) alert("Out of storage!");
+      if (e == QUOTA_EXCEEDED_ERR) alert('Out of storage!');
     }
   }
 }

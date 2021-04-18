@@ -1,10 +1,10 @@
 class Uitgave {
   constructor(id, datum, bedrag, omschrijving, categorie) {
-    this.id = id;
-    this.datum = datum;
-    this.bedrag = bedrag;
-    this.omschrijving = omschrijving;
-    this.categorie = categorie;
+    this._id = id;
+    this._datum = datum;
+    this._bedrag = bedrag;
+    this._omschrijving = omschrijving;
+    this._categorie = categorie;
   }
 
   get id() {
@@ -22,29 +22,11 @@ class Uitgave {
   get categorie() {
     return this._categorie;
   }
-
-  set id(value) {
-    this._id = value;
-  }
-  set datum(value) {
-    this._datum = value;
-  }
-  set bedrag(value) {
-    this._bedrag = value;
-  }
-  set omschrijving(value) {
-    this._omschrijving = value;
-  }
-  set categorie(value) {
-    this._categorie = value;
-  }
 }
-
-
 
 class UitgavenRepository {
   constructor() {
-    this.uitgaven = [];
+    this._uitgaven = [];
     this.uitgavenOpvullen();
   }
 
@@ -52,88 +34,76 @@ class UitgavenRepository {
     return this._uitgaven;
   }
 
-  set uitgaven(value) {
-    this._uitgaven = value;
-  }
-
   voegUitgaveToe(uitgave) {
     this._uitgaven.push(uitgave);
-
   }
 
   uitgavenOpvullen() {
-    this.voegUitgaveToe(new Uitgave(
-      1,
-      new Date(2018, 2, 5),
-      25,
-      'Fnac Veldstraat',
-      'andere'
-    ));
-    this.voegUitgaveToe(new Uitgave(2, new Date(2018, 2, 5), 560, 'Huur', 'woning'));
-    this.voegUitgaveToe(new Uitgave(
-      3,
-      new Date(2018, 2, 6),
-      15,
-      'NMBS Gent-Sint-Pieters',
-      'vervoer'
-    ));
-    this.voegUitgaveToe(new Uitgave(
-      4,
-      new Date(2018, 2, 7),
-      100,
-      'Delhaize Sterre',
-      'voeding'
-    ));
-    this.voegUitgaveToe(new Uitgave(
-      5,
-      new Date(2018, 2, 7),
-      65,
-      'Texaco Tankstation',
-      'vervoer'
-    ));
-    this.voegUitgaveToe(new Uitgave(6, new Date(2018, 2, 8), 15, 'Decascoop', 'andere'));
-    this.voegUitgaveToe(new Uitgave(
-      7,
-      new Date(2018, 2, 9),
-      20,
-      'GB Sint-Denijs-Westrem',
-      'voeding'
-    ));
+    this.voegUitgaveToe(
+      new Uitgave(1, new Date(2018, 2, 5), 25, 'Fnac Veldstraat', 'andere')
+    );
+    this.voegUitgaveToe(
+      new Uitgave(2, new Date(2018, 2, 5), 560, 'Huur', 'woning')
+    );
+    this.voegUitgaveToe(
+      new Uitgave(
+        3,
+        new Date(2018, 2, 6),
+        15,
+        'NMBS Gent-Sint-Pieters',
+        'vervoer'
+      )
+    );
+    this.voegUitgaveToe(
+      new Uitgave(4, new Date(2018, 2, 7), 100, 'Delhaize Sterre', 'voeding')
+    );
+    this.voegUitgaveToe(
+      new Uitgave(5, new Date(2018, 2, 7), 65, 'Texaco Tankstation', 'vervoer')
+    );
+    this.voegUitgaveToe(
+      new Uitgave(6, new Date(2018, 2, 8), 15, 'Decascoop', 'andere')
+    );
+    this.voegUitgaveToe(
+      new Uitgave(
+        7,
+        new Date(2018, 2, 9),
+        20,
+        'GB Sint-Denijs-Westrem',
+        'voeding'
+      )
+    );
   }
 
-
   geefCategorieen() {
-    return [...this._uitgaven.reduce((result, uitgave) => {
-      return result.add(uitgave.categorie)
-    }, new Set())].sort();
-
+    return [
+      ...new Set(this.uitgaven.map((uitgave) => uitgave.categorie).sort()),
+    ];
   }
 
   totaalBedragUitgaven() {
-    return this._uitgaven.reduce((totaal, uitgave) => {
-      return totaal += uitgave.bedrag
-    }, 0);
-
+    return this._uitgaven.reduce(
+      (totaal, uitgave) => totaal + uitgave.bedrag,
+      0
+    );
   }
 
   uitgavenPerCategorie(categorie) {
     return this._uitgaven.reduce((totaal, uitgave) => {
-      return uitgave.categorie === categorie ? totaal += uitgave.bedrag : totaal
+      return uitgave.categorie === categorie
+        ? (totaal += uitgave.bedrag)
+        : totaal;
     }, 0);
   }
-
 }
-
-
 
 class BankComponent {
   constructor(window) {
-    this.canvas = window.document.getElementById('canvas');
-    this.ctx = this._canvas.getContext('2d');
-    this.offset = 50;
-    this.storage = window.localStorage;
-    this.aantalBezoeken = 1;
-    this.uitgavenRepository = new UitgavenRepository();
+    this._canvas = window.document.getElementById('canvas');
+    this._ctx = this._canvas.getContext('2d');
+    this._offset = 50;
+    this._storage = window.localStorage;
+    this._aantalBezoeken = 1;
+    this._uitgavenRepository = new UitgavenRepository();
   }
 
   get canvas() {
@@ -153,25 +123,6 @@ class BankComponent {
   }
   get uitgavenRepository() {
     return this._uitgavenRepository;
-  }
-
-  set canvas(value) {
-    this._canvas = value;
-  }
-  set ctx(value) {
-    this._ctx = value;
-  }
-  set offset(value) {
-    this._offset = value;
-  }
-  set storage(value) {
-    this._storage = value;
-  }
-  set aantalBezoeken(value) {
-    this._aantalBezoeken = value;
-  }
-  set uitgavenRepository(value) {
-    this._uitgavenRepository = value;
   }
 
   toHtml() {
@@ -224,10 +175,10 @@ class BankComponent {
         );
         const breedteKolom = Math.round(
           (this._canvas.width - 2 * this._offset - array.length * 20) /
-          array.length
+            array.length
         );
         const percentage = Math.round(
-          uitgavePerCategorie * 100 / totaleUitgaven,
+          (uitgavePerCategorie * 100) / totaleUitgaven,
           0
         );
         this._ctx.beginPath();
@@ -251,22 +202,24 @@ class BankComponent {
   }
 
   tekst() {
-    document.getElementById("aantalBezoeken").innerHTML = this._aantalBezoeken;
-    document.getElementById("data").innerHTML = '';
+    document.getElementById('aantalBezoeken').innerHTML = this._aantalBezoeken;
+    document.getElementById('data').innerHTML = '';
     this._uitgavenRepository.uitgaven.forEach((uitgave) => {
-      document.getElementById("data").insertAdjacentHTML("beforeend",
+      document.getElementById('data').insertAdjacentHTML(
+        'beforeend',
         `<div class="aankoop">
         <img src="images/${uitgave.categorie}.png">
         <h4>${uitgave.omschrijving} - €${uitgave.bedrag}</h4>
         <p>${uitgave.datum.datumNotatie()}</p>
-      </div>`)
-    })
-
+      </div>`
+      );
+    });
   }
 
   getAantalBezoekenFromStorage() {
     if (this._storage.getItem('aantalBezoeken')) {
-      this._aantalBezoeken = parseInt(this._storage.getItem('aantalBezoeken')) + 1;
+      this._aantalBezoeken =
+        parseInt(this._storage.getItem('aantalBezoeken')) + 1;
       console.log(this._aantalBezoeken);
     } else {
       this._aantalBezoeken = 1;
@@ -302,13 +255,23 @@ function init() {
 
   const bankComponent = new BankComponent(this);
   bankComponent.getAantalBezoekenFromStorage();
-  bankComponent.setAantalBezoekenInStorage()
+  bankComponent.setAantalBezoekenInStorage();
   bankComponent.toHtml();
 }
 
 window.onload = init;
 
 Date.prototype.datumNotatie = function () {
-  const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
-  return (`${dagen[this.getDay()]} ${this.getDate()}/${this.getMonth() + 1}/${this.getFullYear()}`);
+  const dagen = [
+    'Zondag',
+    'Maandag',
+    'Dinsdag',
+    'Woensdag',
+    'Donderdag',
+    'Vrijdag',
+    'Zaterdag',
+  ];
+  return `${dagen[this.getDay()]} ${this.getDate()}/${
+    this.getMonth() + 1
+  }/${this.getFullYear()}`;
 };
