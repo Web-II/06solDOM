@@ -108,7 +108,7 @@ class BoekenRepository {
 class BoekenComponent {
   constructor(window) {
     this._boekenRepository = new BoekenRepository();
-    this._gelezenBoeken = []; // bevat de id's van gelezen boeken
+    this._gelezenBoeken = new Set(); // bevat de id's van gelezen boeken
     this._actievePagina = 1; // bevat het nummer van de pagina die momenteel getoond wordt
     this._storage = window.localStorage;
     this.aantalBoekenPerPagina = 6;
@@ -185,7 +185,7 @@ class BoekenComponent {
       img.setAttribute('src', 'images/' + boek.afbeelding);
       img.setAttribute('alt', '' + boek.titel);
       img.setAttribute('id', '' + boek.id);
-      if (this._gelezenBoeken.indexOf(boek.id) === -1) {
+      if (!this._gelezenBoeken.has(boek.id)) {
         div2.className = 'thumbnail notread';
         img.onclick = () => {
           this.voegGelezenBoekToe(boek.id);
@@ -202,15 +202,17 @@ class BoekenComponent {
   }
 
   voegGelezenBoekToe(id) {
-    this._gelezenBoeken.push(id);
+    this._gelezenBoeken.add(id);
     this.setGelezenBoekenInStorage();
   }
 
   // getGelezenBoekenFromStorage haaltde lijst met id's van gelezen boeken op uit de storage
   getGelezenBoekenFromStorage() {
-    this._gelezenBoeken = [];
+    this._gelezenBoeken = new Set();
     if (this._storage.getItem('gelezenBoeken')) {
-      this._gelezenBoeken = JSON.parse(this._storage.getItem('gelezenBoeken'));
+      this._gelezenBoeken = new Set(
+        JSON.parse(this._storage.getItem('gelezenBoeken'))
+      );
     }
   }
 
@@ -219,7 +221,7 @@ class BoekenComponent {
     try {
       this._storage.setItem(
         'gelezenBoeken',
-        JSON.stringify(this._gelezenBoeken)
+        JSON.stringify([...this._gelezenBoeken])
       );
     } catch (e) {
       if (e == QUOTA_EXCEEDED_ERR) alert('Out of storage!');
